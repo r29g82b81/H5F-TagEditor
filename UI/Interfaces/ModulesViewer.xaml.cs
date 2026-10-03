@@ -77,6 +77,37 @@ namespace TagEditor.UI.Interfaces
         private void Button_UnpackModule(object sender, RoutedEventArgs e){
             if (selected_module == null) return;
 
+            int success_count = 0;
+            try
+            {
+                // open thing prompt and select output path
+                var folderDialog = new OpenFolderDialog
+                {
+                    // Set options here
+                };
+                if (folderDialog.ShowDialog() == true)
+                {
+                    var folderName = folderDialog.FolderName;
+                    if (!string.IsNullOrWhiteSpace(folderName) && Directory.Exists(folderName))
+                    {
+                        foreach (var v in selected_module.file_groups)
+                        {
+                            string group = v.Key;
+                            string group_folder = System.IO.Path.Combine(folderName, group);
+                            if (!Directory.Exists(group_folder)) Directory.CreateDirectory(group_folder);
+                            foreach (var tag in v.Value)
+                            {
+                                byte[] unpacked_tag = selected_module.get_module_file_bytes(tag.file);
+                                string file_path = System.IO.Path.Combine(group_folder, tag.name);
+                                File.WriteAllBytes(file_path, unpacked_tag);
+                                success_count += 1;
+                            }
+                        }
+                        main.DisplayNote("Unpack success, " + success_count + " tags successfully unpacked", null, error_level.NOTE);
+                    }
+                    else main.DisplayNote("Bad directory, please try again", null, error_level.WARNING);
+                }
+                }catch (Exception ex){ main.DisplayNote("exception during unpack, " + success_count + " tags successfully unpacked", ex, error_level.ERROR);}
         }
         private void Button_AddTag(object sender, RoutedEventArgs e){
             if (selected_module == null) return;
@@ -133,19 +164,13 @@ namespace TagEditor.UI.Interfaces
             sb.AppendLine("Version: " + selected_module.module_info.Version);
             sb.AppendLine("ModuleId: " + selected_module.module_info.ModuleId);
             sb.AppendLine("FileCount: " + selected_module.module_info.FileCount);
-            sb.AppendLine("Manifest00_index: " + selected_module.module_info.Manifest00_index);
-            sb.AppendLine("Manifest01_index: " + selected_module.module_info.Manifest01_index);
-            sb.AppendLine("Manifest02_index: " + selected_module.module_info.Manifest02_index);
+            sb.AppendLine("ManifestCount: " + selected_module.module_info.ManifestCount);
             sb.AppendLine("ResourceIndex: " + selected_module.module_info.ResourceIndex);
             sb.AppendLine("StringsSize: " + selected_module.module_info.StringsSize);
             sb.AppendLine("ResourceCount: " + selected_module.module_info.ResourceCount);
             sb.AppendLine("BlockCount: " + selected_module.module_info.BlockCount);
             sb.AppendLine("BuildVersion: " + selected_module.module_info.BuildVersion);
             sb.AppendLine("Checksum: " + selected_module.module_info.Checksum);
-            sb.AppendLine("Unk_0x040: " + selected_module.module_info.Unk_0x040);
-            sb.AppendLine("Unk_0x044: " + selected_module.module_info.Unk_0x044);
-            sb.AppendLine("Unk_0x048: " + selected_module.module_info.Unk_0x048);
-            sb.AppendLine("Unk_0x04C: " + selected_module.module_info.Unk_0x04C);
             Clipboard.SetText(sb.ToString());
         }
 

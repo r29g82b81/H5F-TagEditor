@@ -101,7 +101,9 @@ namespace TagEditor.UI.Windows{
             try{if (!test.Load_tag_file(files.bytes)){
                     main.DisplayNote(tag_path + " was not able to be loaded as a tag", null, error_level.WARNING);
                     return;
-            }} catch{ main.DisplayNote(tag_path + " returned an error (likely due to file read attempt)", null, error_level.WARNING); return;}
+            }} catch(Exception e){ 
+                main.DisplayNote(tag_path + " returned an error (likely due to file read attempt)", null, error_level.WARNING); return;
+            }
 
             // load new tag tab here
             TabItem new_tag = new();

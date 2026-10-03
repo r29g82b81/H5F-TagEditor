@@ -187,7 +187,7 @@ namespace TagEditor.UI.Interfaces.Params{
             foreach (var module in tags_explorer.main.Active_ModuleViewer.active_modules)
                 if (module.file_groups.ContainsKey(TagGroup))
                     foreach (var tag in module.file_groups[TagGroup])
-                        if (tag.is_resource == false && tag.manifest_index == -1)
+                        if (tag.is_resource == false /*&& tag.manifest_index == -1*/)
                             selectable_tags.Add(tag);
 
             selectable_tag_names = new string[selectable_tags.Count];

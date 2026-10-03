@@ -808,7 +808,7 @@ namespace TagEditor.UI.Windows{
                                 try_hook_diff(new_val, param_key); 
                             }continue;
                         case 0x42:{ // _field_data_v2
-                                DataParam new_val = new(param_name, _struct.tag_resource_refs[(ulong)offset], _struct.tag_data, offset, param_group_sizes[type], param_key);
+                                DataParam new_val = new(param_name, _struct.tag_resource_refs[(ulong)offset], _struct.tag_data, offset, (short)tag_structs.tag.param_group_sizes[type], param_key);
                                 container.Children.Add(new_val);
                                 try_hook_diff(new_val, param_key); 
                             }continue;
@@ -825,7 +825,7 @@ namespace TagEditor.UI.Windows{
                         case 0x45: // UNKNOWN
                             break;
                     } // if we're still here, then the type was unimplemented, create new garbage block
-                    GarbageParameter garb_val = new(this, type, actual_line, param_name, _struct.tag_data, offset, param_group_sizes[type], param_key);
+                    GarbageParameter garb_val = new(this, type, actual_line, param_name, _struct.tag_data, offset, (short)tag_structs.tag.param_group_sizes[type], param_key);
                     container.Children.Add(garb_val);
                     try_hook_diff(garb_val, param_key);
                 } else{
@@ -1054,7 +1054,7 @@ namespace TagEditor.UI.Windows{
                         case 0x42:{ // _field_data_v2
                                 DataParam? new_val = bobject as DataParam;
                                 Debug.Assert(new_val != null, "cast failed");
-                                new_val.reload(param_name, _struct.tag_resource_refs[(ulong)offset], _struct.tag_data, offset, param_group_sizes[type], param_key);
+                                new_val.reload(param_name, _struct.tag_resource_refs[(ulong)offset], _struct.tag_data, offset, (short)tag_structs.tag.param_group_sizes[type], param_key);
                                 try_hook_diff(new_val, param_key);
                             }continue;
                         case 0x43:{ // tag_resource // fixed but might still be broken?
@@ -1555,81 +1555,7 @@ namespace TagEditor.UI.Windows{
             clump.ui.clear_references();
         }
 
-        // these should all be correct except for the unknown/unlabelled ones
-        public static short[] param_group_sizes = new short[]
-        {
-            32,  //  _0 // _field_string
-            256, //  _1 // _field_long_string
-            4,   //  _2 // _field_string_id
-            4,   //  _3 // 
-            1,   //  _4 // _field_char_integer
-            2,   //  _5 // _field_short_integer
-            4,   //  _6 // _field_long_integer
-            8,   //  _7 // _field_int64_integer
-            4,   //  _8 // _field_angle
-            4,   //  _9 // _field_tag
-            1,   //  _A // _field_char_enum
-            2,   //  _B // _field_short_enum
-            4,   //  _C // _field_long_enum
-            4,   //  _D // _field_long_flags
-            2,   //  _E // _field_word_flags
-            1,   //  _F // _field_byte_flags
-            4,   // _10 // _field_point_2d
-            4,   // _11 // _field_rectangle_2d
-            4,   // _12 // _field_rgb_color
-            4,   // _13 // _field_argb_color 
-            4,   // _14 // _field_real
-            4,   // _15 // _field_real_fraction
-            8,   // _16 // _field_real_point_2d
-            12,  // _17 // _field_real_point_3d
-            8,   // _18 // _field_real_vector_2d
-            12,  // _19 // _field_real_vector_3d
-            16,  // _1A // _field_real_quaternion
-            8,   // _1B // _field_real_euler_angles_2d
-            12,  // _1C // _field_real_euler_angles_3d
-            12,  // _1D // _field_real_plane_2d
-            16,  // _1E // _field_real_plane_3d
-            12,  // _1F // _field_real_rgb_color
-            16,  // _20 // _field_real_argb_color
-            4,   // _21 // _field_real_hsv_colo
-            4,   // _22 // _field_real_ahsv_color
-            4,   // _23 // _field_short_bounds
-            8,   // _24 // _field_angle_bounds
-            8,   // _25 // _field_real_bounds
-            8,   // _26 // _field_real_fraction_bounds
-            4,   // _27 // 
-            4,   // _28 //
-            4,   // _29 // _field_long_block_flags
-            4,   // _2A // _field_word_block_flags
-            4,   // _2B // _field_byte_block_flags
-            1,   // _2C // _field_char_block_index
-            1,   // _2D // _field_custom_char_block_index
-            2,   // _2E // _field_short_block_index
-            2,   // _2F // _field_custom_short_block_index
-            4,   // _30 // _field_long_block_index
-            4,   // _31 // _field_custom_long_block_index
-            4,   // _32 // 
-            4,   // _33 // 
-            0,   // _34 // _field_pad 
-            0,   // _35 // _field_skip
-            0,   // _36 // _field_explanation
-            0,   // _37 // _field_custom
-            0,   // _38 // _field_struct 
-            0,   // _39 // _field_array
-            4,   // _3A // 
-            0,   // _3B // end of struct
-            1,   // _3C // _field_byte_integer
-            2,   // _3D // _field_word_integer
-            4,   // _3E // _field_dword_integer
-            8,   // _3F // _field_qword_integer
-            20,  // _40 // _field_block_v2
-            28,  // _41 // _field_reference_v2
-            24,  // _42 // _field_data_v2
-            16,  // _43 // tag_resource
-            4,   // _44 // UNKNOWN
-            4    // _45 // UNKNOWN
-        };
-        // more intuitive/userfriendly group names, some may need slight reworks however
+
         public static string[] group_names = new string[]
         {
             "string32",
