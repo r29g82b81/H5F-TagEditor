@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Linq;
+using TagEditor.UI.Windows;
 
 namespace TagEditor.UI.Interfaces.Editor.Params
 {
@@ -21,25 +23,27 @@ namespace TagEditor.UI.Interfaces.Editor.Params
     public partial class DataParam : UserControl
     {
         public string key;
-        public DataParam(string name, byte[] _datter, byte[] _parent_block, int _block_offset, short _length, string _key)
+        TagInstance callback;
+        public DataParam(string name, byte[] _datter, short _length, string _key, TagInstance _callback)
         {
             key = _key;
+            callback = _callback;
             InitializeComponent();
-
-            Namebox.Text = name + " [" + _datter.Length + "]";
-            data = _datter;
-
-
-            Valuebox.Text = BitConverter.ToString(_parent_block[_block_offset..(_block_offset + _length)]).Replace("-", string.Empty);
+            load(name, _datter, _length);
         }
-        public void reload(string name, byte[] _datter, byte[] _parent_block, int _block_offset, short _length, string _key){
+        public void reload(string name, byte[] _datter, short _length, string _key){
             key = _key;
-            Namebox.Text = name + " [" + _datter.Length + "]";
-            data = _datter;
-            Valuebox.Text = BitConverter.ToString(_parent_block[_block_offset..(_block_offset + _length)]).Replace("-", string.Empty);
+            load(name, _datter, _length);
         }
         byte[] data;
+        public void load(string name, byte[] _datter, short _length)
+        {
 
+            Namebox.Text = name + " [" + _datter.Length + "]";
+            data = _datter;
+            byte[] junk = callback.read_param_value(key);
+            Valuebox.Text = BitConverter.ToString(junk[0..(_length)]).Replace("-", string.Empty);
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {

@@ -20,24 +20,20 @@ using static TagEditor.UI.Windows.TagExplorer;
 namespace TagEditor.UI.Interfaces.Params{
     public partial class TagrefParam : UserControl {
         public string key;
-        public TagrefParam(TagInstance _callback, int _param_type, int _line_index, string name, byte[] _parent_block, int _block_offset, TagExplorer _tags_explorer, string _key) {
+        public TagrefParam(TagInstance _callback, int _param_type, int _line_index, string name, TagExplorer _tags_explorer, string _key) {
             callback = _callback;
             line_index = _line_index;
             param_type = _param_type;
             key = _key;
             tags_explorer = _tags_explorer;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             InitializeComponent();
             loadValue();
             Namebox.Text = name;
             is_setting_up = false;
         }
-        public void reload(byte[] _parent_block, int _block_offset, string _key) {
+        public void reload(string _key) {
             key = _key;
             is_setting_up = true;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             loadValue();
             is_setting_up = false;
         }
@@ -48,20 +44,20 @@ namespace TagEditor.UI.Interfaces.Params{
         string TagAssetID = "";
 
         bool is_setting_up = true;
-        byte[] parent_block;
-        int block_offset;
         private void loadValue() {
-            uint tagID = BitConverter.ToUInt32(parent_block[(block_offset + 0x8)..(block_offset + 0xC)]);
+            byte[] val = callback.read_param_value(key);
+
+            uint tagID = BitConverter.ToUInt32(val[0x8..0xC]);
             TagIDname = tagID.ToString("X8");
             TagName = tag_structs.get_shorttagname(tagID);
             TagIDBox.Content = TagName;
-            ulong assetID = BitConverter.ToUInt64(parent_block[(block_offset + 0xC)..(block_offset + 0x14)]);
+            ulong assetID = BitConverter.ToUInt64(val[0xC..0x14]);
             TagAssetID = assetID.ToString("X16");
             AssetIDBox.Content = TagAssetID;
 
-            int value_test = BitConverter.ToInt32(parent_block[(block_offset + 0x14)..(block_offset + 0x18)]);
+            int value_test = BitConverter.ToInt32(val[0x14..0x18]);
             if (value_test == -1) TagGroup = "NULL";
-            else TagGroup = Reverse(System.Text.Encoding.Default.GetString(parent_block[(block_offset + 0x14)..(block_offset + 0x18)]));
+            else TagGroup = Reverse(System.Text.Encoding.Default.GetString(val[0x14..0x18]));
             GroupBox.Content = TagGroup;
 
             if (og_value == null) og_value = TagGroup + "," + TagIDname + "," + TagAssetID;
@@ -125,21 +121,26 @@ namespace TagEditor.UI.Interfaces.Params{
 
 
             string new_value = TagGroup + "," + TagIDname + "," + TagAssetID;
-            SetValue(this, TagGroup, TagIDname, TagAssetID, parent_block, block_offset);
-            callback.set_diff(this, key, Namebox.Text, param_type, og_value, new_value, line_index, parent_block, block_offset);
+            SetValue(this, TagGroup, TagIDname, TagAssetID, callback, key);
+            callback.set_diff(this, key, Namebox.Text, param_type, og_value, new_value, line_index);
         }
     
 
-        private static void SetValue(TagrefParam? target, string group, string tagid, string assetid, byte[] block, int offset){
+        private static void SetValue(TagrefParam? target, string group, string tagid, string assetid, TagInstance callback, string key){
+
+            byte[] buffer = new byte[0x18];
+
 
             // pack the updated values into mem
             uint tagID = Convert.ToUInt32(tagid, 16); 
             ulong assetID = Convert.ToUInt64(assetid, 16); 
-            BitConverter.GetBytes(tagID).CopyTo(block, offset + 0x8);
-            BitConverter.GetBytes(assetID).CopyTo(block, offset + 0xC);
+            BitConverter.GetBytes(tagID).CopyTo(buffer, 0x8);
+            BitConverter.GetBytes(assetID).CopyTo(buffer, 0xC);
 
-            if (group == "NULL") BitConverter.GetBytes(-1).CopyTo(block, offset + 0x14);
-            else Encoding.UTF8.GetBytes(Reverse(group)).CopyTo(block, offset + 0x14);
+            if (group == "NULL") BitConverter.GetBytes(-1).CopyTo(buffer, 0x14);
+            else Encoding.UTF8.GetBytes(Reverse(group)).CopyTo(buffer, 0x14);
+
+            callback.write_param_value(key, buffer);
 
             // update UI element if it exists
             if (target != null){
@@ -154,7 +155,7 @@ namespace TagEditor.UI.Interfaces.Params{
         int line_index;
         int param_type;
         string? og_value; // note that this will not always be the actual OG value
-        public static void revert_value(string old_value, TagrefParam? target, byte[] block, int offset){
+        public static void revert_value(string old_value, TagrefParam? target, TagInstance callback, string key){
 
             string[] old_values = old_value.Split(",");
             string target_group = old_values[0];
@@ -163,8 +164,8 @@ namespace TagEditor.UI.Interfaces.Params{
 
             if (target != null){
                 target.og_value = old_value;
-                SetValue(target, target_group, target_tagid, target_assetid, block, offset);
-            }else SetValue(null, target_group, target_tagid, target_assetid, block, offset);
+                SetValue(target, target_group, target_tagid, target_assetid, callback, key);
+            }else SetValue(null, target_group, target_tagid, target_assetid, callback, key);
         }
 
         // tags list junk

@@ -20,30 +20,24 @@ namespace TagEditor.UI.Interfaces.Params{
     /// </summary>
     public partial class IntegerParam : UserControl{
         public string key;
-        public IntegerParam(TagInstance _callback, int _param_type, int _line_index, string name, byte[] _parent_block, int _block_offset, IntType _int_type, string _key){
+        public IntegerParam(TagInstance _callback, int _param_type, int _line_index, string name, IntType _int_type, string _key){
             key = _key;
             callback = _callback;
             line_index = _line_index;
             param_type = _param_type;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             int_type = _int_type;
             InitializeComponent();
             loadValue();
             Namebox.Text = name;
             is_setting_up = false;
         }
-        public void reload(byte[] _parent_block, int _block_offset, string _key){
+        public void reload(string _key){
             key = _key;
             is_setting_up = true;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             loadValue();
             is_setting_up = false;
         }
         bool is_setting_up = true;
-        byte[] parent_block;
-        int block_offset;
         // integer stuff //
         IntType int_type;
         public enum IntType{
@@ -60,35 +54,35 @@ namespace TagEditor.UI.Interfaces.Params{
         private void loadValue(){
             switch ((sbyte)int_type){ // if we get errors about "too large or too small" then we aren't actually converting the values right
                 case 0: // byte
-                    sbyte value0 = (sbyte)parent_block[block_offset];
+                    sbyte value0 = (sbyte)callback.read_param_value(key)[0];
                     Valuebox.Text = value0.ToString();
                     break;
                 case 1: // short
-                    short value1 = BitConverter.ToInt16(parent_block[block_offset..(block_offset + 2)]);
+                    short value1 = BitConverter.ToInt16(callback.read_param_value(key));
                     Valuebox.Text = value1.ToString();
                     break;
                 case 2: // int
-                    int value2 = BitConverter.ToInt32(parent_block[block_offset..(block_offset + 4)]);
+                    int value2 = BitConverter.ToInt32(callback.read_param_value(key));
                     Valuebox.Text = value2.ToString();
                     break;
                 case 3: // long
-                    long value3 = BitConverter.ToInt64(parent_block[block_offset..(block_offset + 8)]);
+                    long value3 = BitConverter.ToInt64(callback.read_param_value(key));
                     Valuebox.Text = value3.ToString();
                     break;
                 case 4: // ubyte
-                    byte value4 = Convert.ToByte(parent_block[block_offset]);
+                    byte value4 = callback.read_param_value(key)[0];
                     Valuebox.Text = value4.ToString();
                     break;
                 case 5: // ushort
-                    ushort value5 = BitConverter.ToUInt16(parent_block[block_offset..(block_offset + 2)]);
+                    ushort value5 = BitConverter.ToUInt16(callback.read_param_value(key));
                     Valuebox.Text = value5.ToString();
                     break;
                 case 6: // uint
-                    uint value6 = BitConverter.ToUInt32(parent_block[block_offset..(block_offset + 4)]);
+                    uint value6 = BitConverter.ToUInt32(callback.read_param_value(key));
                     Valuebox.Text = value6.ToString();
                     break;
                 case 7: // ulong
-                    long value7 = BitConverter.ToInt64(parent_block[block_offset..(block_offset + 8)]);
+                    long value7 = BitConverter.ToInt64(callback.read_param_value(key));
                     Valuebox.Text = value7.ToString();
                     break;
             }
@@ -98,12 +92,12 @@ namespace TagEditor.UI.Interfaces.Params{
         private void Button_SaveValue(object sender, TextChangedEventArgs e){
             if (is_setting_up) return;
             // we going to call the exception inside the set value function this time
-            try{SetValue(this, Valuebox, error_marker, Valuebox.Text, int_type, parent_block, block_offset);
-                callback.set_diff(this, key, Namebox.Text, param_type, og_value, Valuebox.Text, line_index, parent_block, block_offset);
+            try{SetValue(this, Valuebox, error_marker, Valuebox.Text, int_type, callback, key);
+                callback.set_diff(this, key, Namebox.Text, param_type, og_value, Valuebox.Text, line_index);
             }catch { 
                 error_marker.Visibility = Visibility.Visible;
         }}
-        private static void SetValue(IntegerParam? target, TextBox? source, Separator? error, string value, IntType int_type, byte[] block, int offset){
+        private static void SetValue(IntegerParam? target, TextBox? source, Separator? error, string value, IntType int_type, TagInstance callback, string key){
             byte[] results;
             switch ((byte)int_type){
                 case 0: // byte
@@ -147,18 +141,18 @@ namespace TagEditor.UI.Interfaces.Params{
                 if (error.Visibility != Visibility.Collapsed) error.Visibility = Visibility.Collapsed;
                 target.is_setting_up = false;
             }
-            results.CopyTo(block, offset);
+            callback.write_param_value(key, results);
         }
         // diff'ing stuff
         TagInstance callback;
         int line_index;
         int param_type;
         string? og_value; // note that this will not always be the actual OG value
-        public static void revert_value(string old_value, IntType int_type, IntegerParam? target,  byte[] block, int offset){
+        public static void revert_value(string old_value, IntType int_type, IntegerParam? target, TagInstance callback, string key){
             if (target != null){
                 target.og_value = old_value;
-                SetValue(target, target.Valuebox, target.error_marker, old_value, int_type, block, offset);
-            }else SetValue(null, null, null, old_value, int_type, block, offset);
+                SetValue(target, target.Valuebox, target.error_marker, old_value, int_type, callback, key);
+            }else SetValue(null, null, null, old_value, int_type, callback, key);
         }
     }
 }

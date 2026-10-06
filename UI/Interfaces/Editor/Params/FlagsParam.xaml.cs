@@ -24,13 +24,11 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
     /// </summary>
     public partial class FlagsParam : UserControl{
         public string key;
-        public FlagsParam(TagInstance _callback, int _param_type, int _line_index, string name, byte[] _parent_block, int _block_offset, FlagType _int_type, string[] _flags, string _key){
+        public FlagsParam(TagInstance _callback, int _param_type, int _line_index, string name, FlagType _int_type, string[] _flags, string _key){
             key = _key;
             callback = _callback;
             line_index = _line_index;
             param_type = _param_type;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             flag_type = _int_type;
             flags = _flags;
             InitializeComponent();
@@ -38,16 +36,12 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
             Namebox.Text = name;
             is_setting_up = false;
         }
-        public void reload(byte[] _parent_block, int _block_offset, string _key){
+        public void reload(string _key){
             key = _key;
             is_setting_up = true;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             loadValue();
             is_setting_up = false;
         }
-        byte[] parent_block;
-        int block_offset;
         public bool is_setting_up = true;
         // flag stuff //
         string[] flags;
@@ -62,15 +56,15 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
         private void loadValue(){
             switch ((sbyte)flag_type){ // if we get errors about "too large or too small" then we aren't actually converting the values right
                 case 0: // ubyte
-                    byte value4 = Convert.ToByte(parent_block[block_offset]);
+                    byte value4 = callback.read_param_value(key)[0];
                     flags_value = value4;
                     break;
                 case 1: // ushort
-                    ushort value5 = BitConverter.ToUInt16(parent_block[block_offset..(block_offset + 2)]);
+                    ushort value5 = BitConverter.ToUInt16(callback.read_param_value(key));
                     flags_value = value5;
                     break;
                 case 2: // uint
-                    uint value6 = BitConverter.ToUInt32(parent_block[block_offset..(block_offset + 4)]);
+                    uint value6 = BitConverter.ToUInt32(callback.read_param_value(key));
                     flags_value = value6;
                     break;
             }
@@ -123,8 +117,8 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
             else flags_value &= ~numerous;
 
             // error handling is sorted here
-            SetValue(this, flags_value, flag_type, parent_block, block_offset);
-            callback.set_diff(this, key, Namebox.Text, param_type, og_value, flags_value.ToString(), line_index, parent_block, block_offset);
+            SetValue(this, flags_value, flag_type, callback, key);
+            callback.set_diff(this, key, Namebox.Text, param_type, og_value, flags_value.ToString(), line_index);
         }
         private uint as_bit_index(int i) => (uint)1 << i;
 
@@ -133,7 +127,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
 
 
 
-        private static void SetValue(FlagsParam? target, uint value, FlagType flag_type, byte[] block, int offset){
+        private static void SetValue(FlagsParam? target, uint value, FlagType flag_type, TagInstance callback, string key){
             byte[] flag_bytes;
             switch ((byte)flag_type){
                 case 0: // ubyte
@@ -149,7 +143,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
                     break;
                 default: throw new Exception("failed to match any enum group");
             }
-            flag_bytes.CopyTo(block, offset);
+            callback.write_param_value(key, flag_bytes);
             // update UI element if it exists
             if (target != null){
                 target.is_setting_up = true;
@@ -162,12 +156,12 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
         int line_index;
         int param_type;
         string? og_value; // note that this will not always be the actual OG value
-        public static void revert_value(string old_value, FlagType flag_type, FlagsParam? target, byte[] block, int offset){
+        public static void revert_value(string old_value, FlagType flag_type, FlagsParam? target, TagInstance callback, string key){
             if (target != null){
                 target.og_value = old_value;
                 if (target.popup_thing.IsOpen == true) target.popup_thing.IsOpen = false;
-                SetValue(target, Convert.ToUInt32(old_value), flag_type, block, offset);
-            }else SetValue(null, Convert.ToUInt32(old_value), flag_type, block, offset);
+                SetValue(target, Convert.ToUInt32(old_value), flag_type, callback, key);
+            }else SetValue(null, Convert.ToUInt32(old_value), flag_type, callback, key);
         }
 
     }

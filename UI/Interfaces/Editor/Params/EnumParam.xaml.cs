@@ -21,13 +21,11 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
     /// </summary>
     public partial class EnumParam : UserControl{
         public string key;
-        public EnumParam(TagInstance _callback, int _param_type, int _line_index, string name, byte[] _parent_block, int _block_offset, EnumType _int_type, string[] _enums, string _key){
+        public EnumParam(TagInstance _callback, int _param_type, int _line_index, string name, EnumType _int_type, string[] _enums, string _key){
             key = _key;
             callback = _callback;
             line_index = _line_index;
             param_type = _param_type;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             _enum_type = _int_type;
             enums = _enums;
             InitializeComponent();
@@ -36,18 +34,14 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
             Namebox.Text = name;
             is_setting_up = false;
         }
-        public void reload(byte[] _parent_block, int _block_offset, string _key){
+        public void reload(string _key){
             key = _key;
             is_setting_up = true;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             loadValue();
             is_setting_up = false;
         }
 
         bool is_setting_up = true;
-        byte[] parent_block;
-        int block_offset;
         // flag stuff //
         string[] enums;
         EnumType _enum_type;
@@ -61,15 +55,15 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
         private void loadValue(){
             switch ((sbyte)_enum_type){ // if we get errors about "too large or too small" then we aren't actually converting the values right
                 case 0: // ubyte
-                    byte value4 = Convert.ToByte(parent_block[block_offset]);
+                    byte value4 = callback.read_param_value(key)[0];
                     selected_enum = value4;
                     break;
                 case 1: // ushort
-                    ushort value5 = BitConverter.ToUInt16(parent_block[block_offset..(block_offset + 2)]);
+                    ushort value5 = BitConverter.ToUInt16(callback.read_param_value(key));
                     selected_enum = value5;
                     break;
                 case 2: // uint
-                    uint value6 = BitConverter.ToUInt32(parent_block[block_offset..(block_offset + 4)]);
+                    uint value6 = BitConverter.ToUInt32(callback.read_param_value(key));
                     selected_enum = value6;
                     break;
             }
@@ -80,13 +74,13 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
         private void enumbox_SelectionChanged(object sender, SelectionChangedEventArgs e){
             if (is_setting_up) return;
             // error handling is sorted here
-            SetValue(this, enumbox.SelectedIndex, _enum_type, parent_block, block_offset);
-            callback.set_diff(this, key, Namebox.Text, param_type, og_value, enumbox.SelectedIndex.ToString(), line_index, parent_block, block_offset);
+            SetValue(this, enumbox.SelectedIndex, _enum_type, callback, key);
+            callback.set_diff(this, key, Namebox.Text, param_type, og_value, enumbox.SelectedIndex.ToString(), line_index);
         }
 
         
             
-        private static void SetValue(EnumParam? target, int value, EnumType enum_type, byte[] block, int offset){
+        private static void SetValue(EnumParam? target, int value, EnumType enum_type, TagInstance callback, string key){
             byte[] enum_bytes;
             switch ((byte)enum_type){
                 case 0: // ubyte
@@ -102,7 +96,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
                     break;
                 default: throw new Exception("failed to match any enum group");
             }
-            enum_bytes.CopyTo(block, offset);
+            callback.write_param_value(key, enum_bytes);
             // update UI element if it exists
             if (target != null){
                 target.is_setting_up = true;
@@ -115,12 +109,12 @@ namespace TagEditor.UI.Interfaces.Editor.Params{
         int line_index;
         int param_type;
         string? og_value; // note that this will not always be the actual OG value
-        public static void revert_value(string old_value, EnumType enum_type, EnumParam? target, byte[] block, int offset){
+        public static void revert_value(string old_value, EnumType enum_type, EnumParam? target, TagInstance callback, string key){
             if (target != null){
                 target.og_value = old_value;
                 if (target.enumbox.IsDropDownOpen == true) target.enumbox.IsDropDownOpen = false;
-                SetValue(target, Convert.ToInt32(old_value), enum_type, block, offset);
-            }else SetValue(null, Convert.ToInt32(old_value), enum_type, block, offset);
+                SetValue(target, Convert.ToInt32(old_value), enum_type, callback, key);
+            }else SetValue(null, Convert.ToInt32(old_value), enum_type, callback, key);
         }
     }
 }

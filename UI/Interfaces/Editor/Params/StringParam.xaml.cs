@@ -17,35 +17,29 @@ using TagEditor.UI.Windows;
 namespace TagEditor.UI.Interfaces.Params{
     public partial class StringParam : UserControl{
         public string key;
-        public StringParam(TagInstance _callback, int _param_type, int _line_index, string name, byte[] _parent_block, int _block_offset, short _length, string _key){
+        public StringParam(TagInstance _callback, int _param_type, int _line_index, string name, short _length, string _key){
             key = _key;
             callback = _callback;
             line_index = _line_index;
             param_type = _param_type;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             length = _length;
             InitializeComponent();
             loadValue();
             Namebox.Text = name;
             is_setting_up = false;
         }
-        public void reload(byte[] _parent_block, int _block_offset, string _key){
+        public void reload(string _key){
             key = _key;
             is_setting_up = true;
-            parent_block = _parent_block;
-            block_offset = _block_offset;
             loadValue();
             is_setting_up = false;
         }
         bool is_setting_up = true;
-        byte[] parent_block;
-        int block_offset;
         // GARBAGE PARAM STUFF //
         short length;
 
         private void loadValue(){
-            Valuebox.Text = Encoding.UTF8.GetString(parent_block, block_offset, length);
+            Valuebox.Text = Encoding.UTF8.GetString(callback.read_param_value(key));
             if (og_value == null) og_value = Valuebox.Text;
         }
 
@@ -54,12 +48,12 @@ namespace TagEditor.UI.Interfaces.Params{
         private void Button_SaveValue(object sender, TextChangedEventArgs e){
             if (is_setting_up) return;
             // the exception is put into the setvalue function
-            try{SetValue(this, Valuebox, error_marker, Valuebox.Text, length, parent_block, block_offset);
-                callback.set_diff(this, key, Namebox.Text, param_type, og_value, Valuebox.Text, line_index, parent_block, block_offset);
+            try{SetValue(this, Valuebox, error_marker, Valuebox.Text, length, callback, key);
+                callback.set_diff(this, key, Namebox.Text, param_type, og_value, Valuebox.Text, line_index);
             }catch { 
                 error_marker.Visibility = Visibility.Visible;
         }}
-        private static void SetValue(StringParam? target, TextBox? source, Separator? error, string value, int length, byte[] block, int offset){
+        private static void SetValue(StringParam? target, TextBox? source, Separator? error, string value, int length, TagInstance callback, string key){
             if (value.Length > length) throw new Exception("value string was too long to fit into buffer");
             byte[] bytes = new byte[length];
             for (int i = 0; i < value.Length; i++) bytes[i] = (byte)value[i];
@@ -70,18 +64,18 @@ namespace TagEditor.UI.Interfaces.Params{
                 if (error.Visibility != Visibility.Collapsed) error.Visibility = Visibility.Collapsed;
                 target.is_setting_up = false;
             }
-            bytes.CopyTo(block, offset);
+            callback.write_param_value(key, bytes);
         }
         // diff'ing stuff
         TagInstance callback;
         int line_index;
         int param_type;
         string? og_value; // note that this will not always be the actual OG value
-        public static void revert_value(string old_value, int string_length, StringParam? target, byte[] block, int offset){
+        public static void revert_value(string old_value, int string_length, StringParam? target, TagInstance callback, string key){
             if (target != null){
                 target.og_value = old_value;
-                SetValue(target, target.Valuebox, target.error_marker, old_value, string_length, block, offset);
-            }else SetValue(null, null, null, old_value, string_length, block, offset);
+                SetValue(target, target.Valuebox, target.error_marker, old_value, string_length, callback, key);
+            }else SetValue(null, null, null, old_value, string_length, callback, key);
         }
     }
 }
