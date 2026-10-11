@@ -1140,7 +1140,7 @@ namespace TagEditor.UI.Windows{
         {
             if (api_path.StartsWith("__root\\\\")) api_path = api_path.Substring(8);
             loaded_tag.set_basic(api_path, new_value);
-            loaded_tag.poke_basic(api_path, new_value);
+            //loaded_tag.poke_basic(api_path, new_value);
         }
         public void set_diff(UIElement element, string key, string param_name, int param_type, string original, string updated, int line_number){
             if (module_file_header != null){

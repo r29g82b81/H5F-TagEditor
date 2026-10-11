@@ -47,17 +47,17 @@ namespace TagEditor.UI.Interfaces.Params{
         private void loadValue() {
             byte[] val = callback.read_param_value(key);
 
-            uint tagID = BitConverter.ToUInt32(val[0x8..0xC]);
+            uint tagID = BitConverter.ToUInt32(val[0xC..0x10]);
             TagIDname = tagID.ToString("X8");
             TagName = tag_structs.get_shorttagname(tagID);
             TagIDBox.Content = TagName;
-            ulong assetID = BitConverter.ToUInt64(val[0xC..0x14]);
+            ulong assetID = BitConverter.ToUInt64(val[0x10..0x18]);
             TagAssetID = assetID.ToString("X16");
             AssetIDBox.Content = TagAssetID;
 
-            int value_test = BitConverter.ToInt32(val[0x14..0x18]);
+            int value_test = BitConverter.ToInt32(val[0x18..0x1C]);
             if (value_test == -1) TagGroup = "NULL";
-            else TagGroup = Reverse(System.Text.Encoding.Default.GetString(val[0x14..0x18]));
+            else TagGroup = Reverse(System.Text.Encoding.Default.GetString(val[0x18..0x1C]));
             GroupBox.Content = TagGroup;
 
             if (og_value == null) og_value = TagGroup + "," + TagIDname + "," + TagAssetID;
@@ -134,11 +134,11 @@ namespace TagEditor.UI.Interfaces.Params{
             // pack the updated values into mem
             uint tagID = Convert.ToUInt32(tagid, 16); 
             ulong assetID = Convert.ToUInt64(assetid, 16); 
-            BitConverter.GetBytes(tagID).CopyTo(buffer, 0x8);
-            BitConverter.GetBytes(assetID).CopyTo(buffer, 0xC);
+            BitConverter.GetBytes(tagID).CopyTo(buffer, 0xC);
+            BitConverter.GetBytes(assetID).CopyTo(buffer, 0x10);
 
-            if (group == "NULL") BitConverter.GetBytes(-1).CopyTo(buffer, 0x14);
-            else Encoding.UTF8.GetBytes(Reverse(group)).CopyTo(buffer, 0x14);
+            if (group == "NULL") BitConverter.GetBytes(-1).CopyTo(buffer, 0x18);
+            else Encoding.UTF8.GetBytes(Reverse(group)).CopyTo(buffer, 0x18);
 
             callback.write_param_value(key, buffer);
 
