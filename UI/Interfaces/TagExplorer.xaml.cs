@@ -101,8 +101,8 @@ namespace TagEditor.UI.Windows{
                 try{
                     mod = new module_structs.module(file);
                     directory_item folder = new directory_item(mod.module_name, mod.module_name, true, module_folder_mapping(mod), true, file, null, mod);
-                    top_level_folders.Add(folder);
                     if (clear_previous) Button_CloseDirectory(null, null); // only due of formality, else we'd have that single line
+                    top_level_folders.Add(folder);
                     open_modules.Add(mod);
                     main.TagViewer_UpdateModules(open_modules);
                     // call a refresh on the module viewer window
@@ -119,8 +119,8 @@ namespace TagEditor.UI.Windows{
                 try{
                     if (!file.EndsWith(".mapinfo")) throw new Exception("file is likely not a mapinfo file!");
 
-                    List<module_structs.module> modules = MapInfo.open_mapinfo(file);
                     if (clear_previous) Button_CloseDirectory(null, null); // only due of formality, else we'd have that single line
+                    List<module_structs.module> modules = MapInfo.open_mapinfo(file);
                     foreach(module_structs.module mod in modules){
                         try{
                             directory_item folder = new directory_item(mod.module_name, mod.module_name, true, module_folder_mapping(mod), true, file, null, mod);
