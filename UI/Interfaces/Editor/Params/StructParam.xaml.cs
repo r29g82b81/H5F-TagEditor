@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using static Infinite_module_test.tag_structs;
+using TagFramework.Src.TagFiles;
 using static TagEditor.UI.Windows.TagInstance;
 
 namespace TagEditor.UI.Interfaces.Params
@@ -23,7 +23,7 @@ namespace TagEditor.UI.Interfaces.Params
     public partial class StructParam : UserControl
     {
         public string key;
-        public StructParam(string name, tag.thing _tag_data, int _struct_offset, string _guid, expand_link _parent, string _key)
+        public StructParam(string name, Tag.thing _tag_data, int _struct_offset, string _guid, expand_link _parent, string _key)
         {
             key = _key;
 
@@ -38,12 +38,12 @@ namespace TagEditor.UI.Interfaces.Params
             guid = _guid;
             parent = _parent;
         }
-        public void reload(tag.thing _tag_data, int _struct_offset, string _key){
+        public void reload(Tag.thing _tag_data, int _struct_offset, string _key){
             key = _key;
             tag_data = _tag_data;
             struct_offset = _struct_offset; // shouldn't need to be updated?
         }
-        public tag.thing tag_data;
+        public Tag.thing tag_data;
         public int struct_offset; // explicity used for struct types that are inlined with the parent block's params
         public string guid; // this is also because of structs, and also array's too, for both
 

@@ -12,8 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using static Infinite_module_test.tag_structs;
-using static Infinite_module_test.tag_structs.tag;
+using static TagFramework.Src.TagFiles.Tag;
 using static TagEditor.UI.Windows.TagInstance;
 
 namespace TagEditor.UI.Interfaces.Editor.Params

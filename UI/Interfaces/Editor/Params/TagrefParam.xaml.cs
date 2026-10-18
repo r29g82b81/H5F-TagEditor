@@ -1,5 +1,4 @@
-﻿using Infinite_module_test;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,8 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TagEditor.UI.Windows;
-using static Infinite_module_test.tag_structs;
-using static TagEditor.UI.Windows.TagExplorer;
+using TagFramework.Src.ModuleFiles;
+using TagFramework.Src.TagFiles;
 
 namespace TagEditor.UI.Interfaces.Params{
     public partial class TagrefParam : UserControl {
@@ -49,7 +48,7 @@ namespace TagEditor.UI.Interfaces.Params{
 
             uint tagID = BitConverter.ToUInt32(val[0xC..0x10]);
             TagIDname = tagID.ToString("X8");
-            TagName = tag_structs.get_shorttagname(tagID);
+            TagName = TagHelpers.get_shorttagname(tagID);
             TagIDBox.Content = TagName;
             ulong assetID = BitConverter.ToUInt64(val[0x10..0x18]);
             TagAssetID = assetID.ToString("X16");
@@ -170,7 +169,7 @@ namespace TagEditor.UI.Interfaces.Params{
 
         // tags list junk
 
-        List<module_structs.module.indexed_module_file>? selectable_tags = null;
+        List<Module.indexed_module_file>? selectable_tags = null;
         string[]? selectable_tag_names = null; 
         private void TagIDBox_Click(object sender, RoutedEventArgs e){
             e.Handled = true;

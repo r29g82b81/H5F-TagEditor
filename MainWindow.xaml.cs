@@ -19,9 +19,9 @@ using Microsoft.Win32;
 using System.Windows.Interop;
 using System.Timers;
 using System.Windows.Threading;
-using static Infinite_module_test.tag_structs;
 using TagEditor.UI.Interfaces;
-using Infinite_module_test;
+using TagFramework.Src.ModuleFiles;
+using TagFramework.Src.TagFiles;
 
 namespace TagEditor
 {
@@ -34,7 +34,7 @@ namespace TagEditor
         {
             InitializeComponent();
 
-            init_strings(); // optional, but loads all tagnames & unhashed stringID's, to make the system easier to navigate
+            TagHelpers.init_strings(); // optional, but loads all tagnames & unhashed stringID's, to make the system easier to navigate
 
             StateChanged += MainWindowStateChangeRaised;
 
@@ -126,7 +126,7 @@ namespace TagEditor
             => Active_TagViewer.OpenTag(tag_path);
         public void TagViewer_OpenModuleTag(directory_item tag_item)
             => Active_TagViewer.OpenModuleTag(tag_item);
-        public void TagViewer_UpdateModules(List<module_structs.module> modules)
+        public void TagViewer_UpdateModules(List<Module> modules)
             => Active_ModuleViewer.update_modules(modules);
         public void TagViewer_UpdateModulesStats()
             => Active_ModuleViewer.update_module_stats();

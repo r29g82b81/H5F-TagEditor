@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using static Infinite_module_test.tag_structs;
+using  TagFramework.Src.TagFiles;
 using static TagEditor.UI.Windows.TagInstance;
 
 namespace TagEditor.UI.Interfaces.Editor.Params
@@ -24,7 +24,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params
     public partial class ArrayParam : UserControl
     {
         public string key;
-        public ArrayParam(string name, tag.thing _tag_data, int _struct_offset, string _guid, expand_link _parent, int _length, int _struct_size, string _key)
+        public ArrayParam(string name, Tag.thing _tag_data, int _struct_offset, string _guid, expand_link _parent, int _length, int _struct_size, string _key)
         {
             key = _key;
             InitializeComponent();
@@ -39,7 +39,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params
             length = _length;
             struct_size = _struct_size;
         }
-        public void reload(tag.thing _tag_data, int _struct_offset, string _key){
+        public void reload(Tag.thing _tag_data, int _struct_offset, string _key){
             key = _key;
             // name does not need updating? as the size is fixed between every instance
             tag_data = _tag_data;
@@ -49,7 +49,7 @@ namespace TagEditor.UI.Interfaces.Editor.Params
             indexbox.Text = selected_index.ToString();
             // we should force it to reload its content? considering we changed the selected index
         }
-        public tag.thing tag_data;
+        public Tag.thing tag_data;
         public int struct_offset; // explicity used for struct types that are inlined with the parent block's params
         public string guid; // this is also because of structs, and also array's too, for both
 

@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TagEditor.UI.Windows;
-using static Infinite_module_test.tag_structs;
+using TagFramework.Src.TagFiles;
 
 namespace TagEditor.UI.Interfaces.Params{
     /// <summary>
@@ -42,9 +42,9 @@ namespace TagEditor.UI.Interfaces.Params{
 
         private void loadValue(){
             uint output = BitConverter.ToUInt32(callback.read_param_value(key));
-            Valuebox.Text = get_stringid(output);
+            Valuebox.Text = TagHelpers.get_stringid(output);
             // we need this to be entirely compatible with the diff reverting, so making it human readable here cant really work out
-            if (og_value == null) og_value = reverse_uint(output).ToString("X8");
+            if (og_value == null) og_value = TagHelpers.reverse_uint(output).ToString("X8");
         }
 
         private void Button_SaveValue(object sender, TextChangedEventArgs e){

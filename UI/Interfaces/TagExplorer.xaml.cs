@@ -6,13 +6,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
-using Infinite_module_test;
 using System.Windows.Shapes;
+using TagFramework.Src.TagFiles;
+using TagFramework.Src.ModuleFiles;
+using TagFramework.Src.MapInfoFiles;
+
 
 
 namespace TagEditor.UI.Windows{
     public class directory_item{
-        public directory_item(string n, string a, bool i_f, List<directory_item>? c, bool i_m, string p, module_structs.module.unpacked_module_file? m_f, module_structs.module? m){
+        public directory_item(string n, string a, bool i_f, List<directory_item>? c, bool i_m, string p, Module.unpacked_module_file? m_f, Module? m){
             name = n;
             alias = a;
             is_folder = i_f;
@@ -30,8 +33,8 @@ namespace TagEditor.UI.Windows{
         public bool is_module;
         public string path; // used as literal path for non-modules, used as toplevel dictionary key for module folders
         // if module then use these
-        public module_structs.module.unpacked_module_file? module_file;
-        public module_structs.module? source_module;
+        public Module.unpacked_module_file? module_file;
+        public Module? source_module;
     }
 
     public partial class TagExplorer : System.Windows.Controls.UserControl{
@@ -40,7 +43,7 @@ namespace TagEditor.UI.Windows{
 
         // structs used to map out directory structures
         List<directory_item> top_level_folders = new();
-        List<module_structs.module> open_modules = new();
+        List<Module> open_modules = new();
 
         public TagExplorer(MainWindow _main){
             main = _main;
@@ -74,11 +77,11 @@ namespace TagEditor.UI.Windows{
 
                 tag_view.Items.Add(CreateTreeDirectory(folder));
         }}
-        public List<directory_item> module_folder_mapping(module_structs.module mod){
+        public List<directory_item> module_folder_mapping(Module mod){
 
             List<directory_item> output = new();
             // first process the folders
-            foreach(var list in mod.file_groups){ // List<module_structs.module.indexed_module_file>
+            foreach(var list in mod.file_groups){ // List<Module.indexed_module_file>
 
                 // process all children into list
                 List<directory_item> group_files = new();
@@ -97,9 +100,9 @@ namespace TagEditor.UI.Windows{
             string file = openFileDialog.FileName;
             if ((result == true) && (!string.IsNullOrWhiteSpace(file)) && File.Exists(file)){
                 // then open the selected module
-                module_structs.module mod;
+                Module mod;
                 try{
-                    mod = new module_structs.module(file);
+                    mod = new Module(file);
                     directory_item folder = new directory_item(mod.module_name, mod.module_name, true, module_folder_mapping(mod), true, file, null, mod);
                     if (clear_previous) Button_CloseDirectory(null, null); // only due of formality, else we'd have that single line
                     top_level_folders.Add(folder);
@@ -115,25 +118,25 @@ namespace TagEditor.UI.Windows{
             var result = openFileDialog.ShowDialog();
             string file = openFileDialog.FileName;
             if ((result == true) && (!string.IsNullOrWhiteSpace(file)) && File.Exists(file)){
-                // then open the selected mapinfo
-                try{
-                    if (!file.EndsWith(".mapinfo")) throw new Exception("file is likely not a mapinfo file!");
+                //// then open the selected mapinfo
+                //try{
+                //    if (!file.EndsWith(".mapinfo")) throw new Exception("file is likely not a mapinfo file!");
 
-                    if (clear_previous) Button_CloseDirectory(null, null); // only due of formality, else we'd have that single line
-                    List<module_structs.module> modules = MapInfo.open_mapinfo(file);
-                    foreach(module_structs.module mod in modules){
-                        try{
-                            directory_item folder = new directory_item(mod.module_name, mod.module_name, true, module_folder_mapping(mod), true, file, null, mod);
-                            top_level_folders.Add(folder);
-                            open_modules.Add(mod);
-                            tag_view.Items.Add(CreateTreeDirectory(folder));
-                        } catch{main.DisplayNote("failed to open module: " + mod.module_file_path, null, MainWindow.error_level.WARNING);}
+                //    if (clear_previous) Button_CloseDirectory(null, null); // only due of formality, else we'd have that single line
+                //    List<Module> modules = MapInfo.open_mapinfo(file);
+                //    foreach(Module mod in modules){
+                //        try{
+                //            directory_item folder = new directory_item(mod.module_name, mod.module_name, true, module_folder_mapping(mod), true, file, null, mod);
+                //            top_level_folders.Add(folder);
+                //            open_modules.Add(mod);
+                //            tag_view.Items.Add(CreateTreeDirectory(folder));
+                //        } catch{main.DisplayNote("failed to open module: " + mod.module_file_path, null, MainWindow.error_level.WARNING);}
 
-                    }
+                //    }
 
 
-                } catch{main.DisplayNote("failed to open module: " + file, null, MainWindow.error_level.WARNING);}
-                main.TagViewer_UpdateModules(open_modules);
+                //} catch{main.DisplayNote("failed to open module: " + file, null, MainWindow.error_level.WARNING);}
+                //main.TagViewer_UpdateModules(open_modules);
         }}
 
         public void try_open_tag(string tagname, string tagIDname) {

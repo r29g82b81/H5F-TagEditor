@@ -18,20 +18,20 @@ using System.Windows.Shapes;
 using System.Xml;
 using TagEditor.UI.Interfaces.Params;
 using TagEditor.UI.Interfaces.Editor;
-using static Infinite_module_test.tag_structs;
+using TagFramework.Src.TagFiles;
+using TagFramework.Src.ModuleFiles;
 using static System.Net.Mime.MediaTypeNames;
 using System.Xml.Linq;
 using System.Collections.ObjectModel;
 using TagEditor.UI.Interfaces.Editor.Params;
 using static TagEditor.MainWindow;
 using static TagEditor.UI.Windows.TagInstance;
-using Infinite_module_test;
 using Microsoft.Win32;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace TagEditor.UI.Windows{
     public partial class TagInstance : UserControl{
-        public TagInstance(MainWindow _main, module_structs.module? _parent, tag _loaded_tag, TabItem _container, string tabitem_name, byte[] _raw_tagbytes)
+        public TagInstance(MainWindow _main, Module? _parent, Tag _loaded_tag, TabItem _container, string tabitem_name, byte[] _raw_tagbytes)
         {
             InitializeComponent();
             main = _main;
@@ -50,7 +50,7 @@ namespace TagEditor.UI.Windows{
         MainWindow main;
         public TabItem container;
         string tabname;
-        tag loaded_tag;
+        Tag loaded_tag;
         byte[] raw_tagbytes;
         bool tag_is_modified = false;
         bool tag_has_been_committed = false; // use this so we dont remove the edited status when we revert changes after committing
@@ -68,7 +68,7 @@ namespace TagEditor.UI.Windows{
 
 
             var v = loaded_tag.compile();
-            module_structs.module.module_compiler packer = new(parent);
+            ModuleCompiler packer = new(parent);
             packer.pack_tag(v.tag_bytes, v.resource_bytes, module_file_header.header.GlobalTagId, module_file_header.header.AssetId, (uint?)module_file_header.header.ClassId, true);
 
             tag_has_been_committed = true;
@@ -76,8 +76,8 @@ namespace TagEditor.UI.Windows{
             main.TagViewer_UpdateModulesStats();
         }
 
-        public module_structs.module.unpacked_module_file? module_file_header;
-        module_structs.module? parent;
+        public Module.unpacked_module_file? module_file_header;
+        Module? parent;
         expand_link root_expand;
         public void LoadTag_UI(){
             if (loaded_tag.root.blocks.Count != 1)
@@ -464,7 +464,7 @@ namespace TagEditor.UI.Windows{
 
         ObservableCollection<string> line_indexes = new();
         ObservableCollection<string> line_groups = new();
-        public void Expand_struct(tag.thing _struct, string struct_guid, StackPanel container, int struct_offset, expand_link expandus_linkus, string key){
+        public void Expand_struct(Tag.thing _struct, string struct_guid, StackPanel container, int struct_offset, expand_link expandus_linkus, string key){
             // we need to generate a key to identify each component
             // ideally, we'd just index each element, and then index tagblocks?
 
@@ -809,7 +809,7 @@ namespace TagEditor.UI.Windows{
                                 try_hook_diff(new_val, param_key); 
                             }continue;
                         case 0x42:{ // _field_data_v2
-                                DataParam new_val = new(param_name, _struct.tag_resource_refs[(ulong)offset], (short)tag_structs.tag.param_group_sizes[type], param_key, this);
+                                DataParam new_val = new(param_name, _struct.tag_resource_refs[(ulong)offset], (short)TagStructs.param_group_sizes[type], param_key, this);
                                 container.Children.Add(new_val);
                                 try_hook_diff(new_val, param_key); 
                             }continue;
@@ -826,7 +826,7 @@ namespace TagEditor.UI.Windows{
                         case 0x45: // UNKNOWN
                             break;
                     } // if we're still here, then the type was unimplemented, create new garbage block
-                    GarbageParameter garb_val = new(this, type, actual_line, param_name, (short)tag_structs.tag.param_group_sizes[type], param_key);
+                    GarbageParameter garb_val = new(this, type, actual_line, param_name, (short)TagStructs.param_group_sizes[type], param_key);
                     container.Children.Add(garb_val);
                     try_hook_diff(garb_val, param_key);
                 } else{
@@ -1055,7 +1055,7 @@ namespace TagEditor.UI.Windows{
                         case 0x42:{ // _field_data_v2
                                 DataParam? new_val = bobject as DataParam;
                                 Debug.Assert(new_val != null, "cast failed");
-                                new_val.reload(param_name, _struct.tag_resource_refs[(ulong)offset], (short)tag_structs.tag.param_group_sizes[type], param_key);
+                                new_val.reload(param_name, _struct.tag_resource_refs[(ulong)offset], (short)TagStructs.param_group_sizes[type], param_key);
                                 try_hook_diff(new_val, param_key);
                             }continue;
                         case 0x43:{ // tag_resource // fixed but might still be broken?

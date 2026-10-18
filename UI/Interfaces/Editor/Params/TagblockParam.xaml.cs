@@ -3,8 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml.Linq;
-using static Infinite_module_test.tag_structs;
-using static Infinite_module_test.tag_structs.tag;
+using static TagFramework.Src.TagFiles.Tag;
 using static TagEditor.UI.Windows.TagInstance;
 
 

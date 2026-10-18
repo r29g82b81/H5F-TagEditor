@@ -16,11 +16,10 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Infinite_module_test;
 using Microsoft.Win32;
 using TagEditor.UI.Windows;
-using static Infinite_module_test.module_structs.module;
 using static TagEditor.MainWindow;
+using TagFramework.Src.ModuleFiles;
 
 namespace TagEditor.UI.Interfaces
 {
@@ -35,9 +34,9 @@ namespace TagEditor.UI.Interfaces
         }
         string[] module_names_display = new string[0];
         List<string> modules_names = new();
-        public List<module_structs.module> active_modules = new();
-        module_structs.module? selected_module = null;
-        public void update_modules(List<module_structs.module> new_modules){
+        public List<Module> active_modules = new();
+        Module? selected_module = null;
+        public void update_modules(List<Module> new_modules){
             active_modules = new_modules;
             modules_names.Clear();
 
@@ -123,7 +122,7 @@ namespace TagEditor.UI.Interfaces
                         // main.DisplayNote("failed to ", ex, error_level.ERROR); // error note will be covered in the function itself
                         return;
                     }
-                    module_compiler compiler = new(selected_module);
+                    ModuleCompiler compiler = new(selected_module);
                     // convert resource list
                     List<byte[]> resources = new();
                     foreach (var v in tags.resource_list) resources.Add(v.Key);
@@ -151,7 +150,7 @@ namespace TagEditor.UI.Interfaces
                 saveFileDialog1.Filter = "Module file|*.module";
                 saveFileDialog1.ShowDialog();
                 if (!string.IsNullOrWhiteSpace(saveFileDialog1.FileName)){
-                    module_compiler compiler = new(selected_module);
+                    ModuleCompiler compiler = new(selected_module);
                     compiler.compile(saveFileDialog1.FileName);
                     main.DisplayNote("Tag successfully compiled. as of now, you must reload the application to continue editing tags.", null, error_level.ERROR);
             }} catch (Exception ex) { main.DisplayNote("failed to compile module, possibly corrupted output file & module in RAM. please close and reopen this application", ex, error_level.ERROR);}
